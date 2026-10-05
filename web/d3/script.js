@@ -1,4 +1,4 @@
-const CSV = "_2026_cleaned.csv";
+const CSV = "./_2026_cleaned.csv";
 const months=["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"],days=["อาทิตย์","จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์"];let data=[];
 const $=id=>document.getElementById(id);const tip=d3.select('body').append('div').attr('class','d3-tooltip').style('opacity',0);
 function clean(v){return String(v??'').trim()}function dateObj(v){let p=clean(v).split(/[\/-]/).map(Number);return p.length===3?(p[0]>31?new Date(p[0],p[1]-1,p[2]):new Date(p[2],p[1]-1,p[0])):null}
