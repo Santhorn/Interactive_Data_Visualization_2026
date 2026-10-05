@@ -1,0 +1,21 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Interactive Data Visualization — Chart.js</title><link rel="stylesheet" href="style.css"></head><body>
+<header><div><div class="eyebrow">DATA VISUALIZATION TECHNOLOGY</div><h1>สถิติผู้เสียชีวิตจากเหตุที่เกี่ยวข้องกับยานพาหนะ</h1><p>Interactive Dashboard · ข้อมูลปี 2026</p></div><div class="badge">Chart.js</div></header>
+<main>
+<section class="panel filters"><h2>ตัวกรองข้อมูล</h2><div class="grid">
+<label>เดือน<select id="month"><option value="">ทั้งหมด</option></select></label>
+<label>เพศ<select id="sex"><option value="">ทั้งหมด</option></select></label>
+<label>จังหวัด<select id="province"><option value="">ทั้งหมด</option></select></label>
+<label>พาหนะ<select id="vehicle"><option value="">ทั้งหมด</option></select></label>
+<label>วันในสัปดาห์<select id="weekday"><option value="">ทั้งหมด</option></select></label>
+</div><div class="actions"><button id="reset">↻ ล้างตัวกรอง</button><span id="status">กำลังโหลดข้อมูล…</span></div></section>
+<section class="kpis"><article><span>จำนวนรายการ</span><strong id="kpiTotal">-</strong><small>ตามตัวกรองปัจจุบัน</small></article><article><span>อายุเฉลี่ย</span><strong id="kpiAge">-</strong><small>ปี · เฉพาะรายการที่มีอายุ</small></article><article><span>เพศชาย</span><strong id="kpiMale">-</strong><small>รายการ</small></article><article><span>จังหวัดที่พบ</span><strong id="kpiProv">-</strong><small>จังหวัด</small></article><article><span>พาหนะสูงสุด</span><strong id="kpiVehicle">-</strong><small>จากตัวกรองปัจจุบัน</small></article></section>
+<section class="charts"><div class="card wide"><h2>แนวโน้มจำนวนรายการรายเดือน</h2><p>แสดงเฉพาะเดือนที่มีข้อมูลจริง</p><canvas id="monthly"></canvas></div>
+<div class="card"><h2>สัดส่วนตามเพศ</h2><canvas id="sexChart"></canvas></div>
+<div class="card"><h2>ประเภทยานพาหนะ</h2><canvas id="vehicleChart"></canvas></div>
+<div class="card wide"><h2>จังหวัดที่พบมากที่สุด 15 อันดับ</h2><canvas id="provinceChart"></canvas></div>
+<div class="card"><h2>อายุของผู้เสียชีวิต</h2><p>แสดงค่าเฉลี่ยอายุของข้อมูลที่ผ่านตัวกรอง</p><div class="agebox"><strong id="ageBig">-</strong><span>ปี</span></div></div>
+<div class="card"><h2>วันในสัปดาห์</h2><canvas id="weekdayChart"></canvas></div>
+<div class="card wide"><h2>ตารางจังหวัด</h2><div class="tablewrap"><table><thead><tr><th>อันดับ</th><th>จังหวัด</th><th>จำนวนรายการ</th><th>ร้อยละ</th></tr></thead><tbody id="provinceTable"></tbody></table></div></div>
+</section>
+<section class="note"><h2>หมายเหตุด้านข้อมูล</h2><p>ชุดข้อมูลนี้มี 4,482 รายการ และ 21 คอลัมน์ในข้อมูลดิบ หลังทำความสะอาดเหลือ 15 คอลัมน์ โดยตัดคอลัมน์ที่ว่างทั้งคอลัมน์/ซ้ำซ้อนออก และไม่สร้างเวลาเกิดเหตุขึ้นเอง เนื่องจากช่อง Time Rec ว่างทั้งหมด</p></section>
+</main><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script><script src="script.js"></script></body></html>
