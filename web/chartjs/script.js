@@ -1,4 +1,4 @@
-const CSV="./_2026_cleaned.csv";
+const csv = "/Interactive_Data_Visualization_2026/web/charts/_2026_cleaned.csv";
 let data=[], charts={};
 const monthsTH=["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
 const weekdays=["อาทิตย์","จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์"];
