@@ -1,28 +1,56 @@
-const CSV = "./_2026_cleaned.csv";
-let data=[], charts={};
-const monthsTH=["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
-const weekdays=["อาทิตย์","จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์"];
-const $=id=>document.getElementById(id);
-function clean(v){return String(v??"").trim()}
-function esc(s){return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;')}
-function dateObj(v){const p=clean(v).split(/[\/-]/).map(Number);if(p.length===3){if(p[0]>31)return new Date(p[0],p[1]-1,p[2]);return new Date(p[2],p[1]-1,p[0])}return null}
-function enrich(r){const d=dateObj(r.DeadDate_EN);return {...r,_date:d,_month:d?d.getMonth():null,_weekday:d?d.getDay():null,_age:(r.Age!==""&&r.Age!=null&&Number(r.Age)>=0)?Number(r.Age):null,_province:clean(r.Province)||"ไม่ระบุจังหวัด",_vehicle:clean(r.Vehicle)||"ไม่ระบุพาหนะ",_sex:clean(r.Sex)||"ไม่ระบุเพศ"}}
-function uniq(vals){return [...new Set(vals.filter(Boolean))].sort((a,b)=>a.localeCompare(b,"th"))}
-function fill(id,vals){const el=$(id),keep=el.value;el.innerHTML='<option value="">ทั้งหมด</option>'+vals.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');if(vals.includes(keep))el.value=keep}
-function filtered(){return data.filter(r=>(!$('month').value||r._month===+$('month').value)&&(!$('sex').value||r._sex===$('sex').value)&&(!$('province').value||r._province===$('province').value)&&(!$('vehicle').value||r._vehicle===$('vehicle').value)&&(!$('weekday').value||r._weekday===+$('weekday').value))}
-function counts(arr,key){const m=new Map();arr.forEach(r=>m.set(r[key],(m.get(r[key])||0)+1));return [...m.entries()].sort((a,b)=>b[1]-a[1])}
-function destroy(id){if(charts[id])charts[id].destroy()}
-const palette={monthly:'#2563eb',sex:['#2563eb','#f97316','#16a34a','#a855f7','#64748b'],vehicle:'#0f766e',province:'#7c3aed',weekday:'#dc2626'};
-function baseOptions(type){return {responsive:true,maintainAspectRatio:false,animation:{duration:450},interaction:{mode:'nearest',intersect:true},plugins:{legend:{display:type==='doughnut',position:'bottom',labels:{usePointStyle:true,padding:16}},tooltip:{enabled:true,backgroundColor:'#172033',titleColor:'#fff',bodyColor:'#fff',borderColor:'#ffffff55',borderWidth:1,padding:12,displayColors:true,titleFont:{size:14,weight:'700'},bodyFont:{size:13},callbacks:{label:(ctx)=>` ${ctx.dataset.label||'จำนวน'}: ${Number(ctx.parsed.y??ctx.parsed).toLocaleString()} รายการ`}}},onHover:(event,active,chart)=>{chart.canvas.style.cursor=active.length?'pointer':'default';}}}
-function make(id,type,labels,values,label,extra={}){destroy(id);const ctx=$(id);let options=baseOptions(type);if(type==='bar')options.scales={x:{beginAtZero:true,ticks:{precision:0}},y:{ticks:{font:{size:12}}}};if(type==='line')options.scales={x:{grid:{display:false}},y:{beginAtZero:true,ticks:{precision:0}}};charts[id]=new Chart(ctx,{type,data:{labels,datasets:[{label,data:values,borderWidth:2,borderRadius:type==='bar'?8:0,tension:.35,fill:type==='line',hoverBorderWidth:4,hoverOffset:type==='doughnut'?12:0,...extra}]},options});return charts[id]}
-function render(){const arr=filtered();$('status').textContent=`แสดง ${arr.length.toLocaleString()} จาก ${data.length.toLocaleString()} รายการ`;$('kpiTotal').textContent=arr.length.toLocaleString();const ages=arr.map(r=>r._age).filter(Number.isFinite);const avg=ages.length?ages.reduce((a,b)=>a+b,0)/ages.length:0;$('kpiAge').textContent=ages.length?avg.toFixed(1):'-';$('ageBig').textContent=ages.length?avg.toFixed(1):'-';$('kpiMale').textContent=arr.filter(r=>r._sex==='ชาย').length.toLocaleString();$('kpiProv').textContent=new Set(arr.map(r=>r._province)).size.toLocaleString();const topV=counts(arr,'_vehicle')[0];$('kpiVehicle').textContent=topV?topV[0]:'-';
-const month=counts(arr,'_month').sort((a,b)=>a[0]-b[0]);make('monthly','line',month.map(x=>monthsTH[x[0]]),month.map(x=>x[1]),'จำนวนรายการ',{borderColor:palette.monthly,backgroundColor:'#2563eb22',pointBackgroundColor:'#2563eb',pointBorderColor:'#fff',pointRadius:6,pointHoverRadius:11});
-const sex=counts(arr,'_sex');make('sexChart','doughnut',sex.map(x=>x[0]),sex.map(x=>x[1]),'จำนวน',{backgroundColor:palette.sex.slice(0,Math.max(1,sex.length)),borderColor:'#fff',borderWidth:3,hoverBorderColor:'#172033'});
-const veh=counts(arr,'_vehicle');make('vehicleChart','bar',veh.map(x=>x[0]),veh.map(x=>x[1]),'จำนวน',{backgroundColor:'#0f766e',hoverBackgroundColor:'#14b8a6'});
-const prov=counts(arr,'_province').slice(0,15);const pc=make('provinceChart','bar',prov.map(x=>x[0]),prov.map(x=>x[1]),'จำนวน',{backgroundColor:'#7c3aed',hoverBackgroundColor:'#a78bfa'});pc.options.indexAxis='y';pc.update();
-const wd=counts(arr,'_weekday').sort((a,b)=>a[0]-b[0]);make('weekdayChart','bar',wd.map(x=>weekdays[x[0]]),wd.map(x=>x[1]),'จำนวน',{backgroundColor:'#dc2626',hoverBackgroundColor:'#f87171'});
-$('provinceTable').innerHTML=prov.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x[0])}</td><td>${x[1].toLocaleString()}</td><td>${arr.length?(x[1]/arr.length*100).toFixed(1):0}%</td></tr>`).join('')||'<tr><td colspan="4">ไม่พบข้อมูล</td></tr>';
-}
-['month','sex','province','vehicle','weekday'].forEach(id=>$(id).addEventListener('change',render));$('reset').onclick=()=>{['month','sex','province','vehicle','weekday'].forEach(id=>$(id).value='');render()};
-fetch(CSV).then(r=>{if(!r.ok)throw Error('โหลด CSV ไม่สำเร็จ');return r.text()}).then(text=>{data=parseCSV(text).map(enrich);const presentMonths=[...new Set(data.map(r=>r._month).filter(Number.isInteger))].sort((a,b)=>a-b);$('month').innerHTML='<option value="">ทั้งหมด</option>'+presentMonths.map(m=>`<option value="${m}">${monthsTH[m]}</option>`).join('');fill('sex',uniq(data.map(r=>r._sex)));fill('province',uniq(data.map(r=>r._province)));fill('vehicle',uniq(data.map(r=>r._vehicle)));const presentDays=[...new Set(data.map(r=>r._weekday).filter(Number.isInteger))].sort((a,b)=>a-b);$('weekday').innerHTML='<option value="">ทั้งหมด</option>'+presentDays.map(i=>`<option value="${i}">${weekdays[i]}</option>`).join('');render()}).catch(e=>{$('status').textContent=e.message;$('status').className='error'});
-function parseCSV(text){const rows=[];let row=[],cell='',q=false;for(let i=0;i<text.length;i++){const c=text[i],n=text[i+1];if(c==='"'&&q&&n==='"'){cell+='"';i++;continue}if(c==='"'){q=!q;continue}if(c===','&&!q){row.push(cell);cell='';continue}if((c==='\n'||c==='\r')&&!q){if(c==='\r'&&n==='\n')i++;row.push(cell);cell='';if(row.some(v=>v!==''))rows.push(row);row=[];continue}cell+=c}if(cell!==''||row.length){row.push(cell);rows.push(row)}const headers=rows.shift().map(h=>h.replace(/^\uFEFF/,''));return rows.map(r=>Object.fromEntries(headers.map((h,i)=>[h,r[i]??'']))) }
+fetch('./_2026_cleaned.csv')
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    return response.text();
+  })
+  .then(text => {
+    console.log('CSV loaded:', text.length, 'characters');
+
+    data = csv(text).map(enrich);
+
+    console.log('Data loaded:', data.length, 'rows');
+    console.log('First row:', data[0]);
+
+    const pm = [...new Set(
+      data.map(r => r.m).filter(Number.isInteger)
+    )].sort((a,b) => a-b);
+
+    $('month').innerHTML =
+      '<option value="">ทั้งหมด</option>' +
+      pm.map(m =>
+        `<option value="${m}">${months[m]}</option>`
+      ).join('');
+
+    fill('sex', uniq(data.map(r => r.sex)));
+    fill('province', uniq(data.map(r => r.province)));
+    fill('vehicle', uniq(data.map(r => r.vehicle)));
+
+    const pd = [...new Set(
+      data.map(r => r.w).filter(Number.isInteger)
+    )].sort((a,b) => a-b);
+
+    $('weekday').innerHTML =
+      '<option value="">ทั้งหมด</option>' +
+      pd.map(i =>
+        `<option value="${i}">${days[i]}</option>`
+      ).join('');
+
+    render();
+  })
+  .catch(error => {
+    console.error('CSV ERROR:', error);
+    $('status').textContent =
+      'โหลดข้อมูลไม่สำเร็จ: ' + error.message;
+  });
+
+['month','sex','province','vehicle','weekday']
+  .forEach(id => $(id).onchange = render);
+
+$('reset').onclick = () => {
+  ['month','sex','province','vehicle','weekday']
+    .forEach(id => $(id).value = '');
+
+  render();
+};
